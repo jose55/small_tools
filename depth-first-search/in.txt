@@ -1,0 +1,4 @@
+line1
+test 2
+line3
+end of file
