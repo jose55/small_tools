@@ -7,12 +7,59 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <vector>
+#include <map>
+#include <sstream>
 using namespace std;
 using namespace biu;
+
+//variables
+//Vertex Number
+int vertex;
+typedef std::vector<int> vertexList;
+//list of neighbouring verteces
+vertexList neighbours;
+//adjacency List (vertex numver, list of neighbouring verteces)
+std::map<int,vertexList> adjacencyList;
+
+//table to store discoverytime and finishtime
+struct time_table {
+    time_table(int v, int d, int f = 0) : vertex(v), discoverytime(d), finishtime(f) {
+    }
+    //friend std::ostream& operator<< (std::ostream& os, const struct time_table& t);
+    int vertex;
+    int discoverytime;
+    int finishtime;
+};
+
+// vector of time tables
+typedef std::vector<struct time_table> time_table_vector;
+
+// overload << operator to be able to print time_table and vertexLists
+std::ostream& operator<< (std::ostream& os, time_table& t) {
+    os << "{" << t.vertex << "," << t.discoverytime << "," << t.finishtime << "}";
+    return os;
+}
+
+std::ostream& operator<< (std::ostream& os, vertexList& vL) {
+    for(auto pos =vL.begin(); pos != vL.end(); ++pos) {
+        const auto& item = *pos;
+        cout << item;
+        if(pos != vL.end()-1) {
+            cout << ",";
+        }
+    }
+    return os;
+}
+
+//function declaration
+void printAdjacencyList(std::map<int,vertexList> adjacencyList);
+time_table_vector DFS(std::map<int,vertexList> adjacencyList, int startVertex);
 
 
 int main(int argc, char ** argv) {
 
+    //define arguments and input/output stream
 	std::istream* input = &std::cin;
 	std::ifstream* inputFile = NULL;
 	std::ostream* out = &std::cout;
@@ -39,7 +86,7 @@ int main(int argc, char ** argv) {
 	}
 
 	if (opts.noErrors()) {
-        //maybe take variables from options
+        //maybe take variables from options here
 	} else {
             return -1;
 	}
@@ -52,7 +99,7 @@ int main(int argc, char ** argv) {
 		} else if (opts.getStrVal("in").compare("STDIN") != 0) {
 			inputFile = new std::ifstream(opts.getStrVal("in").c_str(), ios::in);
 			if (!inputFile->is_open()) {
-				cout <<"Cannot open input file '" <<opts.getStrVal("in") <<"'\n";
+				cout <<"Cannot open input file '" <<opts.getStrVal("in") << endl;
 				throw 1;
 			}
 			input = inputFile;
@@ -64,25 +111,49 @@ int main(int argc, char ** argv) {
 		} else if (opts.getStrVal("out").compare("STDOUT") != 0) {
 			outFile = new std::ofstream(opts.getStrVal("out").c_str(), ios::out);
 			if (!outFile->is_open()) {
-				cout <<"Cannot open output file '" <<opts.getStrVal("out") <<"'\n";
+				cout <<"Cannot open output file '" <<opts.getStrVal("out") << endl;
 				throw 1;
 			}
 			out = outFile;
 		}
 
-        // do calculations here
+        // read input file to Adjacency-List
         string line;
-        while (!inputFile->eof())
-        {
+        while (!inputFile->eof()) {
             getline (*inputFile,line);
-            (*out) <<line <<std::endl;
+
+            stringstream(line.substr(0,line.find(":"))) >> vertex;
+            string connections = line.substr((line.find(":")+1));
+
+            std::stringstream ss(connections);
+            while( ss.good() )
+            {
+                string substr;
+                int subint;
+                getline( ss, substr, ',' );
+                (stringstream(substr)) >> subint;
+                neighbours.push_back(subint);
+            }
+            adjacencyList.insert(pair<int,vertexList>(vertex,neighbours));
+            neighbours = {};
         }
+
+        //print input
+        printAdjacencyList(adjacencyList);
+
+        // call search here
+        time_table_vector ttv = DFS(adjacencyList, 1);
 
 
         // close files on exit
         out->flush();
-        inputFile->close();
-        outFile->close();
+        if (opts.getStrVal("in").compare("STDIN") != 0) {
+            inputFile->close();
+        }
+        if (opts.getStrVal("out").compare("STDOUT") != 0) {
+            outFile->close();
+        }
+
 
 
     } catch (std::exception& ex) {
@@ -97,3 +168,41 @@ int main(int argc, char ** argv) {
 		return -1;
     }
 }
+
+// Print Acjacency list to cout
+void printAdjacencyList(std::map<int,vertexList> adjacencyList)
+{
+    // print input to cout
+    // iterate over adjacencyList
+    for (auto elem : adjacencyList) {
+        cout << elem.first << ": " << elem.second << endl;
+    }
+}
+
+// Algorithmus Depth-Fist-Search
+time_table_vector DFS(std::map<int,vertexList> adjacencyList, int startVertex)
+{
+    /* PSEUDOCODE (http://en.wikipedia.org/wiki/Depth-first_search)
+        1  procedure DFS(G,v):
+        label v as explored
+        for all edges e in G.incidentEdges(v) do
+        if edge e is unexplored then
+            w ← G.opposite(v,e)
+            if vertex w is unexplored then
+                label e as a discovery edge
+                    recursively call DFS(G,w)
+                else
+                    label e as a back edge */
+    // Table with discovery and finnish times
+
+    time_table_vector times;
+    times.push_back(time_table(1,1,1));
+    times.push_back(time_table(2,2,2));
+    times.push_back(time_table(3,3,3));
+
+    for (auto t : times) {
+        cout << t << endl;
+    }
+    return times;
+}
+
