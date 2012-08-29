@@ -24,20 +24,19 @@ std::map<int,vertexList> adjacencyList;
 
 //table to store discoverytime and finishtime
 struct time_table {
-    time_table(int v, int d, int f = 0) : vertex(v), discoverytime(d), finishtime(f) {
+    time_table(int d, int f = 0) : discoverytime(d), finishtime(f) {
     }
-    //friend std::ostream& operator<< (std::ostream& os, const struct time_table& t);
-    int vertex;
     int discoverytime;
     int finishtime;
+    //friend std::ostream& operator<< (std::ostream& os, const struct time_table& t);
 };
-
-// vector of time tables
-typedef std::vector<struct time_table> time_table_vector;
+// map of time_tables of all vertices
+typedef map<int,time_table> time_table_map;
+time_table_map times;
 
 // overload << operator to be able to print time_table and vertexLists
 std::ostream& operator<< (std::ostream& os, time_table& t) {
-    os << "{" << t.vertex << "," << t.discoverytime << "," << t.finishtime << "}";
+    os << "(" << t.discoverytime << "," << t.finishtime << ")";
     return os;
 }
 
@@ -52,9 +51,17 @@ std::ostream& operator<< (std::ostream& os, vertexList& vL) {
     return os;
 }
 
+std::ostream& operator<< (std::ostream& os, time_table_map& m) {
+    for (auto elem : m) {
+        os << "{" << elem.first << ":" << elem.second << "}" << endl;
+    }
+    return os;
+}
+
 //function declaration
 void printAdjacencyList(std::map<int,vertexList> adjacencyList);
-time_table_vector DFS(std::map<int,vertexList> adjacencyList, int startVertex);
+time_table_map DFS(std::map<int,vertexList> adjacencyList, int startVertex);
+void changeTime(int vertex, int discoverytime, int finishtime);
 
 
 int main(int argc, char ** argv) {
@@ -142,7 +149,7 @@ int main(int argc, char ** argv) {
         printAdjacencyList(adjacencyList);
 
         // call search here
-        time_table_vector ttv = DFS(adjacencyList, 1);
+        time_table_map ttm = DFS(adjacencyList, 1);
 
 
         // close files on exit
@@ -180,7 +187,7 @@ void printAdjacencyList(std::map<int,vertexList> adjacencyList)
 }
 
 // Algorithmus Depth-Fist-Search
-time_table_vector DFS(std::map<int,vertexList> adjacencyList, int startVertex)
+time_table_map DFS(std::map<int,vertexList> adjacencyList, int startVertex)
 {
     /* PSEUDOCODE (http://en.wikipedia.org/wiki/Depth-first_search)
         1  procedure DFS(G,v):
@@ -193,16 +200,26 @@ time_table_vector DFS(std::map<int,vertexList> adjacencyList, int startVertex)
                     recursively call DFS(G,w)
                 else
                     label e as a back edge */
-    // Table with discovery and finnish times
 
-    time_table_vector times;
-    times.push_back(time_table(1,1,1));
-    times.push_back(time_table(2,2,2));
-    times.push_back(time_table(3,3,3));
 
-    for (auto t : times) {
-        cout << t << endl;
-    }
+    // initialize
+
+
+    //add entry to times
+    time_table newtime(3,4);
+    times.insert(pair<int,time_table>(1,newtime));
+    cout << times;
+    changeTime(1,5,6);
+    cout << times;
+
     return times;
 }
 
+void changeTime(int vertex, int discoverytime, int finishtime)
+{
+    auto it = times.find(vertex);
+    it->second.discoverytime = 2;
+    it->second.finishtime = 8;
+    //times.erase(it);
+    //times.insert(pair<int,time_table>(vertex,(discoverytime,finishtime)));
+}
