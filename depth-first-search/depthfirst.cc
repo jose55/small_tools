@@ -13,14 +13,8 @@
 using namespace std;
 using namespace biu;
 
-//variables
-//Vertex Number
-int vertex;
+//variable definitions
 typedef std::vector<int> vertexList;
-//list of neighbouring verteces
-vertexList neighbours;
-//adjacency List (vertex numver, list of neighbouring verteces)
-std::map<int,vertexList> adjacencyList;
 
 //table to store discoverytime and finishtime
 struct time_table {
@@ -32,9 +26,20 @@ struct time_table {
 };
 // map of time_tables of all vertices
 typedef map<int,time_table> time_table_map;
-time_table_map times;
 
-// overload << operator to be able to print time_table and vertexLists
+// discovered edges
+struct edge {
+    edge(int a, int b = 0, string t = "") : parent(a), daughter(b), type(t) {
+    }
+    int parent;
+    int daughter;
+    string type;
+};
+// vector of edges
+typedef vector<edge> edge_vector;
+
+
+// overload << operator to be able to print time_table, vertexLists, edge and edge_vector
 std::ostream& operator<< (std::ostream& os, time_table& t) {
     os << "(" << t.discoverytime << "," << t.finishtime << ")";
     return os;
@@ -43,10 +48,22 @@ std::ostream& operator<< (std::ostream& os, time_table& t) {
 std::ostream& operator<< (std::ostream& os, vertexList& vL) {
     for(auto pos =vL.begin(); pos != vL.end(); ++pos) {
         const auto& item = *pos;
-        cout << item;
+        os << item;
         if(pos != vL.end()-1) {
-            cout << ",";
+            os << ",";
         }
+    }
+    return os;
+}
+
+std::ostream& operator<< (std::ostream& os, edge& e) {
+    os << e.type << ": " << e.parent << " - " << e.daughter;
+    return os;
+}
+
+std::ostream& operator<< (std::ostream& os, edge_vector& eV) {
+    for(auto item : eV) {
+        os << item << endl;
     }
     return os;
 }
@@ -60,11 +77,36 @@ std::ostream& operator<< (std::ostream& os, time_table_map& m) {
 
 //function declaration
 void printAdjacencyList(std::map<int,vertexList> adjacencyList);
-time_table_map DFS(std::map<int,vertexList> adjacencyList, int startVertex);
-void changeTime(int vertex, int discoverytime, int finishtime);
+void DFS(int startVertex);
+int getStartVertex();
+void initializeTimes();
+void setDiscovered(int vertex);
+void setFinished(int vertex);
+bool isDiscovered(int vertex);
+bool isFinished(int vertex);
+int getDiscoveryTime(int vertex);
+int getFinishTime(int vertex);
+vertexList getNeighbours (int vertex);
+int getVertexColour(int vertex);
+
+//global variables
+// map of time_tables of all vertices
+time_table_map times;
+//adjacency List (vertex numver, list of neighbouring verteces)
+std::map<int,vertexList> adjacencyList;
+//Time of search
+int searchtime;
+// vector of edges
+edge_vector edges;
 
 
 int main(int argc, char ** argv) {
+
+    // local varaibles
+    //Vertex Number
+    int vertex;
+    //list of neighbouring verteces
+    vertexList neighbours;
 
     //define arguments and input/output stream
 	std::istream* input = &std::cin;
@@ -146,10 +188,23 @@ int main(int argc, char ** argv) {
         }
 
         //print input
+        cout << "You have inserted following graph:" <<endl;
         printAdjacencyList(adjacencyList);
 
-        // call search here
-        time_table_map ttm = DFS(adjacencyList, 1);
+        // fill time_table times with vertex names and zeros
+        initializeTimes();
+        cout << "Initialized times with zero:" << endl << times;
+
+        // call search algorithm here
+        searchtime = 1;
+        while (int startVertex = getStartVertex() != 0) {
+            cout << "--> Starting a new search at vertex: " << startVertex << endl;
+            DFS(startVertex);
+        }
+        cout << endl << "-- Finished depth first search! --" << endl;
+        (*out) << "Final times are:" << endl << times << endl;
+        (*out) << "Detected Edges are:" << endl;
+        (*out) << edges << endl;
 
 
         // close files on exit
@@ -171,6 +226,7 @@ int main(int argc, char ** argv) {
 	    switch (e) {
 	        // throw 1 - input output file error
 	        case 1: (*out) <<"Input or Output file could not be opened!" <<std::endl; break;
+	        case 2: (*out) <<"Trying to overwrite Discoverytime or Finishtime" <<std::endl; break;
 	    }
 		return -1;
     }
@@ -187,7 +243,7 @@ void printAdjacencyList(std::map<int,vertexList> adjacencyList)
 }
 
 // Algorithmus Depth-Fist-Search
-time_table_map DFS(std::map<int,vertexList> adjacencyList, int startVertex)
+void DFS(int startVertex)
 {
     /* PSEUDOCODE (http://en.wikipedia.org/wiki/Depth-first_search)
         1  procedure DFS(G,v):
@@ -200,26 +256,146 @@ time_table_map DFS(std::map<int,vertexList> adjacencyList, int startVertex)
                     recursively call DFS(G,w)
                 else
                     label e as a back edge */
+    setDiscovered(startVertex);
 
+    vertexList neighbours = getNeighbours(startVertex);
+    cout << "Neighbours of vertex "
+	 << startVertex
+	 << " are: "
+	 << neighbours
+	 << endl;
 
-    // initialize
-
-
-    //add entry to times
-    time_table newtime(3,4);
-    times.insert(pair<int,time_table>(1,newtime));
-    cout << times;
-    changeTime(1,5,6);
-    cout << times;
-
-    return times;
+    for (int vertex : neighbours)
+    {
+        // vertex is white
+        if (getVertexColour(vertex) == 0) {
+            // add tree edge to edges vector
+            edge myedge(startVertex,vertex,"tree edge");
+            edges.push_back(myedge);
+            cout << "added " << myedge << endl;
+            // show times table
+            cout << "current times:" << endl << times;
+            // recursively call DFS
+            DFS(vertex);
+        }
+        // vertex is gray
+        else if (getVertexColour(vertex) == 1) {
+            cout << "vertex " << vertex << " is gray -> ignore." << endl;
+            // add tree edge to edges vector
+            bool edgeexists = false;
+            for (auto elem : edges)
+            {
+                if ((elem.daughter == vertex && elem.parent == startVertex) || (elem.parent == vertex && elem.daughter == startVertex)) {
+                    edgeexists = true;
+                }
+            }
+            if (!edgeexists) {
+                edge myedge(startVertex,vertex,"back edge");
+                edges.push_back(myedge);
+                cout << "added " << myedge << endl;
+            }
+        }
+    }
+    setFinished(startVertex);
 }
 
-void changeTime(int vertex, int discoverytime, int finishtime)
+int getStartVertex()
+{
+    //get an unexplored vertex to start.
+    for (auto elem : adjacencyList) {
+        auto it = times.find(elem.first);
+        if (it->second.discoverytime == 0)
+            return elem.first;
+    }
+    return 0;
+}
+
+void initializeTimes()
+{
+    // initialize timetable
+    for (auto elem : adjacencyList) {
+        time_table zero(0,0);
+        times.insert(pair<int,time_table>(elem.first,zero));
+    }
+}
+
+void setDiscovered(int vertex)
 {
     auto it = times.find(vertex);
-    it->second.discoverytime = 2;
-    it->second.finishtime = 8;
-    //times.erase(it);
-    //times.insert(pair<int,time_table>(vertex,(discoverytime,finishtime)));
+
+    if (it->second.discoverytime == 0) {
+        it->second.discoverytime = searchtime;
+        cout << searchtime << ") discovered vertex: " << vertex << endl;
+        searchtime++;
+    }
+    else {
+      cout << searchtime << ") vertex: " << vertex << endl;
+      throw 2;
+    }
 }
+
+void setFinished(int vertex)
+{
+    auto it = times.find(vertex);
+
+    if (it->second.finishtime == 0 && it->second.discoverytime > 0) {
+        it->second.finishtime = searchtime;
+        cout << searchtime << ") finished vertex: " << vertex << endl;
+        searchtime++;
+    }
+    else {
+      cout << searchtime << ") vertex: " << vertex << endl;
+      throw 2;
+    }
+}
+
+bool isDiscovered(int vertex)
+{
+  auto it = times.find(vertex);
+  if (it->second.discoverytime > 0)
+    return true;
+  else
+    return false;
+}
+
+bool isFinished(int vertex)
+{
+  auto it = times.find(vertex);
+  if (it->second.finishtime > 0)
+    return true;
+  else
+    return false;
+}
+
+int getDiscoveryTime(int vertex)
+{
+    auto it = times.find(vertex);
+    return it->second.discoverytime;
+}
+
+int getFinishTime(int vertex)
+{
+    auto it = times.find(vertex);
+    return it->second.finishtime;
+}
+
+vertexList getNeighbours (int vertex)
+{
+    auto it = adjacencyList.find(vertex);
+    return it->second;
+}
+
+int getVertexColour(int vertex)
+{
+    auto it = times.find(vertex);
+    // vertex is white
+    if (it->second.discoverytime == 0 && it->second.finishtime == 0)
+        return 0;
+    // vertex is grey
+    else if (it->second.discoverytime > 0 && it->second.finishtime == 0)
+        return 1;
+    // vertex is black
+    else if (it->second.discoverytime > 0 && it->second.finishtime > 0)
+        return 2;
+}
+
