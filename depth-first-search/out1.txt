@@ -1,0 +1,48 @@
+Final times are:
+{1:(1,40)}
+{2:(2,39)}
+{3:(3,12)}
+{4:(10,11)}
+{5:(4,9)}
+{6:(5,6)}
+{7:(7,8)}
+{8:(13,38)}
+{9:(14,37)}
+{10:(15,36)}
+{11:(16,35)}
+{12:(18,33)}
+{13:(17,34)}
+{14:(22,23)}
+{15:(21,30)}
+{16:(20,31)}
+{17:(19,32)}
+{18:(24,29)}
+{19:(25,26)}
+{20:(27,28)}
+
+Detected Edges are:
+tree edge: 1 - 2
+tree edge: 2 - 3
+tree edge: 3 - 5
+tree edge: 5 - 6
+tree edge: 5 - 7
+tree edge: 3 - 4
+tree edge: 2 - 8
+tree edge: 8 - 9
+tree edge: 9 - 10
+tree edge: 10 - 11
+tree edge: 11 - 13
+tree edge: 13 - 12
+back edge: 12 - 9
+tree edge: 12 - 17
+back edge: 17 - 1
+tree edge: 17 - 16
+tree edge: 16 - 15
+tree edge: 15 - 14
+back edge: 14 - 13
+tree edge: 15 - 18
+tree edge: 18 - 19
+tree edge: 18 - 20
+
+Tree is:
+(1B (2 (3 (5 (6 6) (7 7) 5) (4 4) 3) (8 (9A (10 (11 (13C (12A (17B (16 (15 (14C C14) (18 (19 19) (20 20) 18) 15) 16) B17) A12) C13) 11) 10) A9) 8) 2) B1) 

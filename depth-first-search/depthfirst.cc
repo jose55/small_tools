@@ -88,11 +88,12 @@ int getDiscoveryTime(int vertex);
 int getFinishTime(int vertex);
 vertexList getNeighbours (int vertex);
 int getVertexColour(int vertex);
+string generateTree();
 
 //global variables
 // map of time_tables of all vertices
 time_table_map times;
-//adjacency List (vertex numver, list of neighbouring verteces)
+//adjacency List (vertex number, list of neighbouring verteces)
 std::map<int,vertexList> adjacencyList;
 //Time of search
 int searchtime;
@@ -180,11 +181,11 @@ int main(int argc, char ** argv) {
                 string substr;
                 int subint;
                 getline( ss, substr, ',' );
-                (stringstream(substr)) >> subint;
-                neighbours.push_back(subint);
+                (stringstream(std::move(substr))) >> subint;
+                neighbours.push_back(std::move(subint));
             }
-            adjacencyList.insert(pair<int,vertexList>(vertex,neighbours));
-            neighbours = {};
+            adjacencyList.insert(pair<int,vertexList>(std::move(vertex),std::move(neighbours)));
+            //neighbours = {};
         }
 
         //print input
@@ -199,12 +200,16 @@ int main(int argc, char ** argv) {
         searchtime = 1;
         while (int startVertex = getStartVertex() != 0) {
             cout << "--> Starting a new search at vertex: " << startVertex << endl;
+            // show times table
+            cout << "current times:" << endl << times;
             DFS(startVertex);
         }
         cout << endl << "-- Finished depth first search! --" << endl;
         (*out) << "Final times are:" << endl << times << endl;
         (*out) << "Detected Edges are:" << endl;
         (*out) << edges << endl;
+        (*out) << "Tree is:" << endl;
+        (*out) << generateTree() << endl;
 
 
         // close files on exit
@@ -304,8 +309,9 @@ int getStartVertex()
     //get an unexplored vertex to start.
     for (auto elem : adjacencyList) {
         auto it = times.find(elem.first);
-        if (it->second.discoverytime == 0)
+        if (it->second.discoverytime == 0) {
             return elem.first;
+        }
     }
     return 0;
 }
@@ -399,3 +405,49 @@ int getVertexColour(int vertex)
         return 2;
 }
 
+string generateTree()
+{
+    string tree;
+    map<int,string> sortetTime;
+    char ch = 'A';
+    map <int,string> backedge;
+
+    for (auto e : edges) {
+        if (e.type == "back edge") {
+            char st [] = {ch,'\0'};
+            backedge.insert(pair<int,string>(e.parent,st));
+            backedge.insert(pair<int,string>(e.daughter,st));
+            ch++;
+        }
+    }
+
+
+    for (auto elem : times) {
+        stringstream out;
+        out << elem.first;
+        string v = out.str();
+        string dis = "(";
+        dis.append(v);
+        string fin;
+
+        for (auto e : backedge) {
+            if (e.first == elem.first) {
+                dis.append(e.second);
+                fin.append(e.second);
+            }
+        }
+
+        dis.append(" ");
+        fin.append(v);
+        fin.append(") ");
+
+        sortetTime.insert(pair<int,string>(elem.second.discoverytime,dis));
+        sortetTime.insert(pair<int,string>(elem.second.finishtime,fin));
+    }
+
+    for (auto elem : sortetTime) {
+        tree.append(elem.second);
+    }
+
+    return tree;
+}
