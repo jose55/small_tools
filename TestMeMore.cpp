@@ -5,6 +5,7 @@
 #include <tuple>
 #include <functional> //for ref function
 #include <deque> //for double ended queue
+#include <unordered_map> // for unordered maps
 
 
 using namespace std;
@@ -19,6 +20,15 @@ int foo1 (int & a)
 {
     a++;
     return a;
+}
+
+//print any container
+template <typename T>
+void printContainer (const T& cont)
+{
+	for (const auto& elem : cont) {
+		cout << elem << endl;
+	}
 }
 
 // Main programm code starts here
@@ -74,4 +84,19 @@ int main ()
 		cout << elem << " ";
     }
     cout << endl;
+    // use printContainer funktion to print again
+    printContainer(de);
+
+    unordered_map<float,string> mymap = {
+    {1.0,"Hello"},
+    {2.1,"unordered"},
+    {3.4,"Map!"}
+    };
+
+    mymap[1.7] = "wooow";
+	mymap[1.7].append(" nice.");
+
+	for (const auto& elem : mymap) {
+		cout << elem.first << ": " << elem.second << endl;
+	}
 }
