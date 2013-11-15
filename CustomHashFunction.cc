@@ -53,12 +53,22 @@ int main () {
 	
 	// not get the item again:
 	// 1) the easy way:
-	std::cerr << n[9][mykey] << std::endl;
+	std::cout << n[9][mykey] << std::endl;
 	// 2) and the hard way
 	std::unordered_map < MyKey , unsigned long long , MyKeyHash>::const_iterator item = n[9].find(mykey);
 	
 	if (item != n[9].end()) {
-		std::cerr << item->second << std::endl;
+		std::cout << item->second << std::endl;
+	}
+	
+	// now try to get an item that does not exist
+	mykey.insert(std::make_pair(34,53));
+	item = n[0].find(mykey);
+	
+	if (item != n[0].end()) {
+		std::cout << item->second << std::endl;
+	} else {
+		std::cerr << "Item does not exist!" << std::endl;
 	}
 	
 }
