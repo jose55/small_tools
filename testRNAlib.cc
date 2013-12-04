@@ -2,7 +2,7 @@
 2013-12-03,
 You need the newest ViennaRNA library installed globally or adjust the paths!
 (https://www.tbi.univie.ac.at/~ronny/RNA/index.html)
-Compile with: g++ -fopenmp -g -Wall --std=c++11 -I/usr/include/ViennaRNA/ -L/usr/lib64/ testRNAlib.cc -lRNA -lm -o testRNAlib
+Compile with: g++ -fopenmp -g -Wall --std=c++11 -I/usr/include/ -L/usr/lib64/ testRNAlib.cc -lRNA -lm -o testRNAlib
 */
 
 #include <vector>
@@ -10,7 +10,7 @@ Compile with: g++ -fopenmp -g -Wall --std=c++11 -I/usr/include/ViennaRNA/ -L/usr
 #include <iostream>
 
 extern "C" {
-	#include "fold.h"
+	#include "ViennaRNA/fold.h"
 }
 
 // typedefs
