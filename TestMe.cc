@@ -2,23 +2,41 @@
 
 // Include standard library
 #include <iostream>
+#include <algorithm>
 using namespace std;
 
 // print list with pointer
-void print (std::initializer_list<int> vars)
+void print (initializer_list<int> vars)
 {
     for (auto p = vars.begin(); p != vars.end(); ++p)
     {
-        std::cout << *p << endl;
+      std::cout << *p << " ";
     }
+    cout << endl;
+
+
 }
 
 // c++11 range based for loop to print list
-void print2 (std::initializer_list<int> vars)
+void print2 (initializer_list<int> vars)
 {
     for (int i : vars)
-    cout << i << endl;
+      cout << i << " ";
+    cout << endl;
+
 }
+
+struct algo
+{
+  algo(initializer_list<int> v)
+    {
+      //the algorithm for_each() of the STL
+      for_each(v.begin(),v.end(),[](int element){cout<<element<<" "; });
+
+    cout<<endl;
+
+    }
+};
 
 // Main programm code starts here
 int main ()
@@ -28,4 +46,8 @@ int main ()
 
     print(numbers);
     print2({3,4,1,2,5,3,1,2});
+
+    algo algorithm{3,2,3,6,7,4};//executes the constructor
+
+    return 0;
 }
