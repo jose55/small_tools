@@ -37,8 +37,18 @@ int main ()
 	vector<string> input;
 	list<string> list;
 	map<int, string>map;
+
+
+	string chain;
+	getline(cin,chain);	
+
 	// copy iterator reads from istream_iteratur(standard in) and back_inserter writes strings to end of container. end is eof.
-	copy (istream_iterator<string>(cin), istream_iterator<string>(), back_inserter(input));
+	//copy (istream_iterator<string>(cin), istream_iterator<string>(), back_inserter(input));
+
+	//the former statment dosn't work in my computer.
+	//So, I do without iterators:
+	input.push_back(chain);
+
 
 	// print raw input with user defined generic function, which should print any array, vector, list...
 	cout << "Raw input: " << endl;
